@@ -44,7 +44,7 @@ body {
 }
 #footer {
   font-family: ABCSansNovaLight, "Arial Narrow", Helvetica, sans-serif;
-  margin-top: 14px;
+  margin-top: 10px;
   font-size: 12px;
   color: #888;
 }
@@ -70,5 +70,11 @@ body {
   }
   #subhead {
     font-size: 15px;
+  }
+  .axis .tick text {
+    font-size: .7rem;
+  }
+  #xAxisGroup .tick text {
+    font-size: .85rem;
   }
 }
