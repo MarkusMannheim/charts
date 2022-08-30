@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-155991615-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag("js", new Date());
+      gtag("config", "UA-155991615-1");
+    </script>
+
+    <!-- metaphysics -->
+    <meta charset="utf-8">
+    <title>Woden's development</title>
+    <meta name="author" content="Markus Mannheim">
+    <meta name="keywords" content="act, canberra, woden, valley, aerial, images, maps, development, growth, time">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- scripts -->
+    <script src="./resources/d3.v7.min.js"></script>
+    <link href="./resources/wodenStyle.css" rel="stylesheet">
+    <link href="./resources/abcLogo64.png" rel="icon">
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="header">Building a town centre</div>
+      <div id="chart">
+        <div id="imageHolder"></div>
+        <div id="title">1955</div>
+      </div>
+      <div id="footer">Source: ACT Environment, Planning and Sustainable Development Directorate</div>
+    </div>
+
+    <script>
+      // elements
+      container = d3.select("#container");
+      header = d3.select("#header");
+      chart = d3.select("#chart");
+      imageHolder = d3.select("#imageHolder");
+      title = d3.select("#title");
+      footer = d3.select("#footer");
+
+      // await fonts
+      document.fonts.onloadingdone = fontsReady();
+
+      function fontsReady() {
+        // await user (scroll to map)
+        loadTarget = document.querySelector("#footer");
+
+        // set up frame activation
+        observer = new IntersectionObserver(loadFrame, {
+          threshold: 1
+        });
+        ready = false;
+        observer.observe(loadTarget);
+      }
+
+      function loadFrame(interactionObjects) {
+        interactionObjects.map(function(object) {
+          if (!ready && object.isIntersecting) drawPage();
+        });
+      }
+
+      function drawPage() {
+        ready = true;
+
+        window.addEventListener("resize", resize);
+
+        // load images
+        years = [1955, 1968, 1972, 1981, 1990, 1998, 2004, 2012, 2017, 2022];
+
+        years.forEach(function(year) {
+          let url = "./media/woden" + year + ".jpg";
+          let loadImage = document.createElement("img");
+          loadImage.src = url;
+
+          let image = imageHolder
+            .append("div")
+              .classed("image", true)
+              .attr("id", "image" + year)
+              .style("opacity", function() { return year == 1955 ? 1 : 0; });
+
+          loadImage.addEventListener("load", function() {
+            image.style("background-image", function() { return "url(" + url + ")"; });
+            loadImage = null;
+            if (year == 2022) resize();
+          });
+        });
+
+        chart.transition()
+          .duration(500)
+          .style("opacity", 1)
+          .on("end", function() {
+            loop(0);
+          });
+      }
+
+      function resize() {
+        dimensions = document.getElementById("chart").getBoundingClientRect();
+        width = dimensions.width;
+        height = dimensions.height;
+
+        d3.selectAll(".image").style("height", height + "px");
+      }
+
+      function loop(year) {
+        title.text(years[year]);
+        d3.select("#image" + years[year])
+          .transition()
+            .duration(1000)
+            .style("opacity", 1)
+            .on("end", function() {
+              year = year + 1;
+              d3.timeout(function() {
+                if (year < years.length) {
+                  loop(year);
+                } else {
+                  year = 0;
+                  d3.selectAll(".image").filter(function(d) { return d > 1955; })
+                  .transition()
+                    .duration(1500)
+                    .style("opacity", 0)
+                    .on("end", function() {
+                      loop(year);
+                    });
+                }
+              }, 1500);
+          });
+      }
+    </script>
+  </body>
+</html>
