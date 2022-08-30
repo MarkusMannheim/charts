@@ -109,7 +109,7 @@
         title.text(years[year]);
         d3.select("#image" + years[year])
           .transition()
-            .duration(1000)
+            .duration(500)
             .style("opacity", 1)
             .on("end", function() {
               year = year + 1;
@@ -118,13 +118,15 @@
                   loop(year);
                 } else {
                   year = 0;
-                  d3.selectAll(".image").filter(function(d) { return d > 1955; })
-                  .transition()
-                    .duration(1500)
-                    .style("opacity", 0)
-                    .on("end", function() {
-                      loop(year);
-                    });
+                  d3.selectAll(".image")
+                    .transition()
+                      .duration(500)
+                      .style("opacity", function(d) {
+                        return this.id == "image1955" ? 1 : 0;
+                      });
+                  d3.timeout(function() {
+                    loop(year);
+                  }, 500);
                 }
               }, 1500);
           });
