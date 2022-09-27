@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-155991615-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag("js", new Date());
+      gtag("config", "UA-155991615-1");
+    </script>
+
+    <!-- metaphysics -->
+    <meta charset="utf-8">
+    <title>ACT school enrolments</title>
+    <meta name="author" content="Markus Mannheim">
+    <meta name="keywords" content="act, canberra, public, school, enrolments, projections, students">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- scripts -->
+    <script src="./resources/d3.v7.min.js"></script>
+    <link href="./resources/schoolStyle.css" rel="stylesheet">
+    <link href="./resources/abcLogo64.png" rel="icon">
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="header">
+        <select id="selector" onchange="changeSchool()"></select>
+      </div>
+      <div id="subhead">past and projected student enrolment</div>
+      <svg id="chart">
+        <g id="axisGroup">
+          <g id="xAxisGroup" class="axis"></g>
+          <g id="yAxisGroup" class="axis"></g>
+        </g>
+        <g id="chartGroup">
+          <path id="pastLine" class="enrolments"></path>
+          <path id="projectedLine" class="enrolments"></path>
+          <path id="pointer"></path>
+          <g id="cellGroup"></g>
+        </g>
+      </svg>
+      <div id="footer">Note: Enrolments for schools marked * are for <span id="spanType"></span> students only.<span id="spanBreak"></span>
+        Sources: ACT Education Directorate, ANU School of Demography</div>
+      <div id="tip"></div>
+    </div>
+
+    <script>
+      // elements
+      container = d3.select("#container");
+      selector = d3.select("#selector");
+      subhead = d3.select("#subhead");
+      chart = d3.select("#chart");
+      chartGroup = d3.select("#chartGroup");
+      axisGroup = d3.select("#axisGroup");
+      xAxisGroup = d3.select("#xAxisGroup");
+      yAxisGroup = d3.select("#yAxisGroup");
+      pastLine = d3.select("#pastLine");
+      projectedLine = d3.select("#projectedLine");
+      pointer = d3.select("#pointer");
+      footer = d3.select("#footer");
+      cellGroup = d3.select("#cellGroup");
+      tip = d3.select("#tip");
+
+      // parameters
+      params = new URLSearchParams(window.location.search);
+      schoolType = params.get("type");
+      years = d3.range(2009, 2028);
+      footer.select("span").text(function() {
+        if (schoolType == "college") {
+          return schoolType;
+        } else {
+          return schoolType + " school";
+        }
+      });
+
+      // load data
+      d3.csv("./data/school_projections.csv")
+        .then(function(data) {
+
+          // format data
+          chartData = data
+            .filter(function(d) {
+              return d.type == schoolType;
+            })
+            .map(function(d, id) {
+              for (i in Object.keys(d)) {
+                if (Object.keys(d)[i] !== "district" && Object.keys(d)[i] !== "school" && Object.keys(d)[i] !== "type") {
+                  d[Object.keys(d)[i]] = +d[Object.keys(d)[i]];
+                }
+              }
+              d.enrolments = [];
+              for (i in years) {
+                d.enrolments.push(d["year_" + years[i]]);
+                delete d["year_" + years[i]];
+              }
+              d.id = id;
+              return d;
+            });
+
+          selector.selectAll("option")
+            .data(chartData)
+            .enter().append("option")
+              .property("value", function(d) { return d.id; })
+              .text(function(d) { return d.school; })
+
+          y = d3.scaleLinear();
+          x = d3.scaleLinear()
+            .domain(d3.extent(years));
+          xAxis = d3.axisBottom(x)
+            .ticks(5, ".0f")
+            .tickSizeOuter(0)
+            .tickPadding(8);
+          yAxis = d3.axisLeft(y)
+            .ticks(4, ",.0f")
+            .tickSizeOuter(0)
+            .tickPadding(10);
+          line = d3.line()
+            .x(function(d) { return x(d.year); })
+            .y(function(d) { return y(d.enrolments); })
+            .curve(d3.curveNatural);
+          pointerLine = d3.line()
+            .x(function(d) { return x(d.year); })
+            .y(function(d) { return y(d.enrolments); });
+
+          // await fonts
+          document.fonts.onloadingdone = fontsReady();
+        });
+
+      function fontsReady(d) {
+        // await user (scroll to map)
+        loadTarget = document.querySelector("#footer");
+
+        // set up frame activation
+        observer = new IntersectionObserver(loadFrame, {
+          threshold: 1
+        });
+        ready = false;
+        observer.observe(loadTarget);
+      }
+
+      function loadFrame(interactionObjects) {
+        interactionObjects.map(function(object) {
+          if (!ready && object.isIntersecting) drawChart();
+        });
+      }
+
+      function drawChart() {
+        ready = true;
+        window.addEventListener("resize", resize);
+        changeSchool();
+      }
+
+      function changeSchool() {
+        school = +selector.property("value");
+        schoolData = chartData[school];
+        pastData = [];
+        projectedData = [];
+        nodeData = [];
+        for (i in years) {
+          if (schoolData.enrolments[i] > 0) {
+            datum = {
+              year: years[i],
+              enrolments: schoolData.enrolments[i]
+            };
+            if (years[i] < 2023) pastData.push(datum);
+            if (years[i] > 2021) projectedData.push(datum);
+            nodeData.push(datum);
+          }
+        }
+        resize();
+      }
+
+      function resize() {
+        hoverOff();
+
+        dimensions = document.getElementById("chart").getBoundingClientRect();
+        width = dimensions.width;
+        height = dimensions.height;
+
+        d3.select("#spanBreak").html(width < 500 ? "" : "<br>");
+
+        margin = width < 500 ? { top: 10, right: 10, bottom: 20, left: 40 } : { top: 10, right: 10, bottom: 20, left: 45 };
+
+        x.range([margin.left, width - margin.right]);
+        y.range([height - margin.bottom, margin.top])
+          .domain([0, d3.max(schoolData.enrolments)]).nice();
+        xAxis.tickSizeInner(margin.top + margin.bottom - height);
+        yAxis.tickSizeInner(margin.left + margin.right - width);
+
+        pastLine.attr("d", line(pastData));
+        projectedLine.attr("d", line(projectedData));
+
+        nodes = chartGroup.selectAll(".node")
+          .data(nodeData, function(d) { return d.year; })
+        nodes.enter()
+          .append("circle")
+            .classed("node", true)
+            .attr("r", (width < 500 ? 3 : 4))
+            .attr("cx", function(d) { return x(d.year); })
+            .attr("cy", function(d) { return y(d.enrolments); });
+        nodes.attr("r", (width < 500 ? 3 : 4))
+          .attr("cx", function(d) { return x(d.year); })
+          .attr("cy", function(d) { return y(d.enrolments); });
+        nodes.exit().remove();
+
+        cellData = nodeData
+          .map(function(d) {
+            return [x(d.year), y(d.enrolments)];
+          });
+        delaunay = d3.Delaunay.from(cellData);
+        voronoi = delaunay.voronoi([0, 0, width, height]);
+        cells = cellGroup
+          .selectAll(".cell")
+            .data(nodeData, function(d) { return d.year; });
+        cells.enter()
+          .append("path")
+            .classed("cell", true)
+            .attr("d", function(d, i) { return voronoi.renderCell(i); })
+            .on("mouseover", hoverOn)
+            .on("mouseout", hoverOff);
+        cells.attr("d", function(d, i) { return voronoi.renderCell(i); });
+        cells.exit().remove();
+
+        xAxisGroup.attr("transform", "translate(0, " + (height - margin.bottom) + ")")
+          .call(xAxis);
+        yAxisGroup.attr("transform", "translate(" + margin.left + ", 0)")
+          .call(yAxis);
+      }
+
+      function hoverOn(event, d) {
+        pointer.attr("d", pointerLine([
+            { year: 2009, enrolments: d.enrolments },
+            { year: d.year, enrolments: d.enrolments },
+            { year: d.year, enrolments: 0 }
+          ]))
+          .style("display", "block");
+
+        tip.style("opacity", 0)
+          .style("left", "0px")
+          .style("top", "0px")
+          .html("<strong>" + d3.format(",.0f")(d.enrolments) + "</strong> students<br>in " + d.year);
+
+        tipWidth = tip.node().getBoundingClientRect().width;
+        tipHeight = tip.node().getBoundingClientRect().height;
+
+        tip.style("left", function() {
+            if (d.year <= 2018) {
+              return (x(d.year) + 10) + "px";
+            } else {
+              return (x(d.year) - tipWidth - 10) + "px";
+            }
+          })
+          .style("top", function() {
+            console.log(d.enrolments, y(d.enrolments), tipHeight);
+            if (d.enrolments < y.domain()[1] / 2) {
+              return (dimensions.top + y(d.enrolments) - 10 - tipHeight) + "px";
+            } else {
+              return (dimensions.top + y(d.enrolments) + 10) + "px";
+            }
+          })
+          .style("opacity", 1);
+      }
+
+      function hoverOff() {
+        pointer.style("display", "none");
+        tip.style("opacity", 0);
+      }
+    </script>
+  </body>
+</html>
