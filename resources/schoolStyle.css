@@ -92,6 +92,9 @@ option {
   stroke: #037cc2;
   pointer-events: none;
 }
+.node.selected {
+  fill: #f26d00;
+}
 .cell {
   fill: rgba(0, 0, 0, 0);
 }

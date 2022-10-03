@@ -192,11 +192,13 @@
         pastLine.attr("d", line(pastData));
         projectedLine.attr("d", line(projectedData));
 
-        nodes = chartGroup.selectAll(".node")
-          .data(nodeData, function(d) { return d.year; })
+        nodes = chartGroup
+          .selectAll(".node")
+            .data(nodeData, function(d) { return d.year; });
         nodes.enter()
           .append("circle")
             .classed("node", true)
+            .attr("id", function(d) { return "node" + d.year; })
             .attr("r", (width < 500 ? 3 : 4))
             .attr("cx", function(d) { return x(d.year); })
             .attr("cy", function(d) { return y(d.enrolments); });
@@ -217,6 +219,7 @@
         cells.enter()
           .append("path")
             .classed("cell", true)
+            .attr("id", function(d) { return "cell" + d.year; })
             .attr("d", function(d, i) { return voronoi.renderCell(i); })
             .on("mouseover", hoverOn)
             .on("mouseout", hoverOff);
@@ -237,6 +240,9 @@
           ]))
           .style("display", "block");
 
+        d3.select("#node" + d.year)
+          .classed("selected", true);
+
         tip.style("opacity", 0)
           .style("left", "0px")
           .style("top", "0px")
@@ -253,7 +259,6 @@
             }
           })
           .style("top", function() {
-            console.log(d.enrolments, y(d.enrolments), tipHeight);
             if (d.enrolments < y.domain()[1] / 2) {
               return (dimensions.top + y(d.enrolments) - 10 - tipHeight) + "px";
             } else {
@@ -264,6 +269,7 @@
       }
 
       function hoverOff() {
+        d3.selectAll(".node").classed("selected", false);
         pointer.style("display", "none");
         tip.style("opacity", 0);
       }
