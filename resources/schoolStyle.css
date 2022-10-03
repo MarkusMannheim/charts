@@ -32,18 +32,19 @@ body {
 }
 #selector {
   margin-bottom: 10px;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-family: ABCSansNovaBlack, "Arial Black", Helvetica, sans-serif;
   outline: none;
   background: #037cc2;
   color: white;
-  padding: 2px 0;
+  padding: .15rem;
+  box-shadow: 1px 1px 4px #001533;
+  cursor: pointer;
 }
 option {
   background: white;
-  color: #001533;
+  color: #68788e;
   font-size: .9rem;
-  padding: 0;
   font-family: ABCSansNovaRegular, Helvetica, sans-serif;
 }
 #subhead {
