@@ -96,6 +96,11 @@
           // await fonts
           ready = false;
           document.fonts.onloadingdone = fontsReady();
+
+          d3.timeout(function() {
+            if (!ready) fontsReady();
+          }, 5000);
+
         });
 
       function fontsReady() {
@@ -126,6 +131,7 @@
 
         window.addEventListener("resize", resize);
         resize();
+        d3.interval(resize, 5000);
       }
 
       function resize() {
