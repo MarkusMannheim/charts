@@ -98,9 +98,8 @@
           document.fonts.onloadingdone = fontsReady();
 
           d3.timeout(function() {
-            if (!ready) fontsReady();
+            if (!ready) drawChart();
           }, 5000);
-
         });
 
       function fontsReady() {
