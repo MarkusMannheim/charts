@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-155991615-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag("js", new Date());
+      gtag("config", "UA-155991615-1");
+    </script>
+
+    <!-- metaphysics -->
+    <meta charset="utf-8">
+    <title>Canberra & Queanbeyan housing prices</title>
+    <meta name="author" content="Markus Mannheim">
+    <meta name="keywords" content="act, canberra, queanbeyan, housing, house, prices, suburbs">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- scripts -->
+    <script src="./resources/d3.v7.min.js"></script>
+    <link href="./resources/housingPricesStyle.css" rel="stylesheet">
+    <link href="./resources/abcLogo64.png" rel="icon">
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="header">Property sales over the past year:</div>
+      <svg id="chart">
+        <g id="chartGroup"></g>
+        <g id="axisGroup">
+          <g id="xAxisGroup" class="axis"></g>
+          <g id="yAxisGroup" class="axis"></g>
+        </g>
+      </svg>
+      <div id="legendDiv">
+        <div id="legend">
+          <div class="key">
+            <div class="dot"></div>
+            <div class="label">Canberra suburbs</div>
+          </div>
+          <div class="key">
+            <div class="dot qbn"></div>
+            <div class="label">Queanbeyan</div>            
+          </div>
+        </div>
+      </div>
+      <div id="footer">
+        <p>Includes sales of all housing types (houses, townhouses, units, etc) in the 12 months to March 19, 2023. Some prices were not disclosed.</p>
+        <p class="source">Source: Allhomes.com.au</p>
+      </div>
+    </div>
+
+    <script>
+      // elements
+      container = d3.select("#container");
+      header = d3.select("#header");
+      chart = d3.select("#chart");
+      chartGroup = d3.select("#chartGroup");
+      axisGroup = d3.select("#axisGroup");
+      xAxisGroup = d3.select("#xAxisGroup");
+      yAxisGroup = d3.select("#yAxisGroup");
+      legend = d3.select("legend");
+      footer = d3.select("#footer");
+
+      // load data
+      d3.csv("./data/cbrQbnSales.csv")
+        .then(function(data) {
+
+          // format data
+          chartData = data
+            .map(function(d) {
+              return {
+                suburb: d.suburb,
+                qbn: d.qbn,
+                price: +d.price
+              };
+            })
+            .sort(function(a, b) {
+              return d3.ascending(a.qbn, b.qbn) || d3.ascending(a.suburb, b.suburb);
+            });
+
+          range = d3.extent(chartData.map(function(d) { return d.price; }));
+          suburbs = Array.from(new Set(chartData.map(function(d) { return d.suburb; })));
+
+          x = d3.scaleLinear()
+            .domain(range).nice();
+          y = d3.scaleBand()
+            .domain(suburbs)
+            .paddingInner(.1);
+          
+          xAxis = d3.axisBottom(x);
+          yAxis = d3.axisLeft(y)
+            .tickPadding(10);
+
+          // await fonts
+          document.fonts.onloadingdone = fontsReady();
+        });
+
+      function fontsReady() {
+        // await user (scroll to map)
+        loadTarget = document.querySelector("#footer");
+
+        // set up frame activation
+        observer = new IntersectionObserver(loadFrame, {
+          threshold: 1
+        });
+        ready = false;
+        observer.observe(loadTarget);
+      }
+
+      function loadFrame(interactionObjects) {
+        interactionObjects.map(function(object) {
+          if (!ready && object.isIntersecting) drawChart();
+        });
+      }
+
+      function drawChart() {
+        ready = true;
+
+        prices = chartGroup
+          .selectAll(".price")
+            .data(chartData)
+          .enter().append("circle")
+            .attr("class", function(d) { return d.qbn + " price"; });            
+
+        window.addEventListener("resize", resize);
+        resize();
+      }
+
+      function resize() {
+        dimensions = document.getElementById("chart").getBoundingClientRect();
+        width = dimensions.width;
+        height = dimensions.height;
+
+        margin = width < 500 ?
+          { top: 20, right: 0, bottom: 24, left: 120 } :
+          { top: 20, right: 10, bottom: 24, left: 125 };
+
+        x.range([margin.left, width - margin.right]);
+        xAxis.tickPadding((width < 500 ? 7 : 10))
+          .ticks((width < 500 ? 3 : 5), "$,.0f")
+          .tickSizeOuter(0)
+          .tickSizeInner(margin.top + margin.bottom - height);
+        xAxisGroup.attr("transform", "translate(0, " + (height - margin.bottom) + ")")
+          .call(xAxis);
+
+        y.range([margin.top, height - margin.bottom]);
+        yAxis.tickSize(0);
+        yAxisGroup.attr("transform", "translate(" + (margin.left) + ", 0)")
+          .call(yAxis);
+
+        prices.attr("r", function(d) { return width < 500 ? 3 : 4; })
+          .attr("cy", function(d) { return y(d.suburb) + y.bandwidth() / 2 + d3.randomNormal()() * y.bandwidth() / (width < 500 ? 15 : 10); })
+          .attr("cx", function(d) { return x(d.price); });
+        
+      }
+    </script>
+  </body>
+</html>
