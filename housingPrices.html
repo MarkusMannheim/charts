@@ -94,7 +94,13 @@
             .tickPadding(10);
 
           // await fonts
+          ready = false;
           document.fonts.onloadingdone = fontsReady();
+
+          d3.timeout(function() {
+            if (!ready) fontsReady();
+          }, 5000);
+
         });
 
       function fontsReady() {
@@ -104,8 +110,7 @@
         // set up frame activation
         observer = new IntersectionObserver(loadFrame, {
           threshold: 1
-        });
-        ready = false;
+        });        
         observer.observe(loadTarget);
       }
 
@@ -126,6 +131,7 @@
 
         window.addEventListener("resize", resize);
         resize();
+        // d3.interval(resize, 5000);
       }
 
       function resize() {
