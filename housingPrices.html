@@ -93,13 +93,22 @@
           yAxis = d3.axisLeft(y)
             .tickPadding(10);
 
-          // await fonts
-          ready = false;
-          document.fonts.onloadingdone = fontsReady();
+          // temp fix
+          drawChart();
 
-          d3.timeout(function() {
-            if (!ready) fontsReady();
-          }, 3000);
+          chart.style("opacity", 0)
+            .transition()
+              .delay(1000)
+              .duration(1000)
+              .style("opacity", 1);
+
+          // await fonts
+          // ready = false;
+          // document.fonts.onloadingdone = fontsReady();
+
+          // d3.timeout(function() {
+          //   if (!ready) fontsReady();
+          // }, 3000);
 
         });
 
