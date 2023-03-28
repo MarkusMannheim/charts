@@ -109,6 +109,12 @@
         text.attr("x", width / 2)
           .attr("y", height / 2);
 
+        // send dimensions to host window
+        window.parent.postMessage({
+          sentinel: "amp",
+          type: "embed-size",
+          height: height
+        }, "*");
       }
     </script>
   </body>
