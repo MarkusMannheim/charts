@@ -65,7 +65,6 @@
         loadTarget = document.querySelector("#chart");
 
         // set up frame activation
-        ready = false;
         observer = new IntersectionObserver(loadFrame, {threshold: 0.5});
         observer.observe(loadTarget);
       }
@@ -75,12 +74,12 @@
         text.text("frame in view");
 
         interactionObjects.map(function(object) {
-          if (!ready && object.isIntersecting) drawChart();
+          if (object.isIntersecting) drawChart();
         });
       }
 
       function drawChart() {
-        ready = true;
+        observer.unobserve(loadTarget);
 
         chart.style("background", "#d45f5f");
         text.text("draw chart");
