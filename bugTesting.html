@@ -84,6 +84,12 @@
         chart.style("background", "#d45f5f");
         text.text("draw chart");
 
+        stars = chart
+          .selectAll(".star")
+            .data(chartData)
+          .enter().append("circle")
+            .classed("star", true);
+
         window.addEventListener("resize", resize);
         resize();
       }
@@ -95,6 +101,10 @@
 
         chart.style("background", "#6450b3");
         text.text("resize chart");
+
+        stars.attr("cx", function(d) { return width / 2 + d.x * width / 4; })
+          .attr("cy", function(d) { return height / 2 + d.y * height / 4; })
+          .attr("r", width > 500 ? 2 : 1);
 
         text.attr("x", width / 2)
           .attr("y", height / 2);

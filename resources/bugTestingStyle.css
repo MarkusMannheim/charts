@@ -47,6 +47,10 @@ body {
   text-anchor: middle;
   alignment-baseline: middle;
 }
+.star {
+  fill: gold;
+  opacity: .1;
+}
 
 @media only screen and (max-width: 500px) {
   #text {
