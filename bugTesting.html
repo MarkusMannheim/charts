@@ -110,10 +110,13 @@
           .attr("y", width / 2);
 
         // send dimensions to host window
+        iframeHeight = document.querySelector("#header").getBoundingClientRect().height +
+          document.querySelector("#chart").getBoundingClientRect().height;
+
         window.parent.postMessage({
           sentinel: "amp",
           type: "embed-size",
-          height: width
+          height: iframeHeight
         }, "*");
       }
     </script>
