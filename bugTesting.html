@@ -65,8 +65,8 @@
         loadTarget = document.querySelector("#chart");
 
         // set up frame activation
-        observer = new IntersectionObserver(loadFrame, {threshold: 1});
         ready = false;
+        observer = new IntersectionObserver(loadFrame, {threshold: 0.5});
         observer.observe(loadTarget);
       }
 
