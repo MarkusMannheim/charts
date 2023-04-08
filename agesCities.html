@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-155991615-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag("js", new Date());
+      gtag("config", "UA-155991615-1");
+    </script>
+
+    <!-- metaphysics -->
+    <meta charset="utf-8">
+    <title>Capital city populations</title>
+    <meta name="author" content="Markus Mannheim">
+    <meta name="keywords" content="act, canberra, cities, population, ages, data">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- scripts -->
+    <script src="./resources/d3.v7.min.js"></script>
+    <link href="./resources/agesCitiesStyle.css" rel="stylesheet">
+    <link href="./resources/abcLogo64.png" rel="icon">
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="header">
+        <select id="selector" onchange="changeCity()"></select>
+      </div>
+      <svg id="chart">
+        <g id="chartGroup"></g>
+        <g id="axisGroup">
+          <g id="xAxisGroup" class="axis"></g>
+          <g id="yAxisGroup" class="axis"></g>
+        </g>
+      </svg>
+      <div id="footer">
+        <div class="men key">
+          <div class="box"></div>
+          <div class="label">males</div>
+        </div>
+        <div class="women key">
+          <div class="box"></div>
+          <div class="label">females</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // elements
+      container = d3.select("#container");
+      header = d3.select("#header");
+      selector = d3.select("#selector");
+      chart = d3.select("#chart");
+      chartGroup = d3.select("#chartGroup");
+      xAxisGroup = d3.select("#xAxisGroup");
+      yAxisGroup = d3.select("#yAxisGroup");
+      footer = d3.select("footer");
+
+      // load data
+      d3.csv("./data/cities_ages.csv")
+        .then(function(data) {
+          // format data
+          data = data
+            .map(function(d) {
+              let datum = {};
+              for (key of Object.keys(d)) {
+                if (key.includes("age_")) {
+                  datum[key.replace("age_", "")] = +d[key]
+                } else {
+                  datum[key] = d[key];
+                }
+              };
+              return datum;
+            });
+
+          // process data          
+          cities = [... new Set(data.map(d => d.city))].sort();
+          ages = Object.keys(data[0]).filter(d => Number.isInteger(+d));
+
+          chartData = [];
+          for (city of cities) {
+            let datum = data
+              .filter(d => d.city == city);
+
+            let cityTotal = d3.sum(datum.map(d => d3.sum(Object.values(d).filter(e => Number.isInteger(e)))));
+
+            let object = {
+              city: city,
+              males: [],
+              females: []
+            };            
+
+            datum.forEach(function(d) {
+              for (key of Object.keys(d)) {
+                if (key !== "city" && key !== "sex") {
+                  object[d.sex].push(d[key] / cityTotal);
+                }
+              }
+            });
+
+            chartData.push(object);
+          }
+
+          max = d3.max(chartData, d => Math.max(d3.max(d.males), d3.max(d.females)));
+
+          // await fonts
+          document.fonts.onloadingdone = fontsReady();
+        });
+
+      function fontsReady() {
+        // await user (scroll to map)
+        loadTarget = document.querySelector("#chart");
+
+        // set up frame activation
+        observer = new IntersectionObserver(loadFrame, {threshold: 0.5});
+        observer.observe(loadTarget);
+      }
+
+      function loadFrame(interactionObjects) {
+        interactionObjects.map(function(object) {
+          if (object.isIntersecting) drawChart();
+        });
+      }
+
+      function drawChart() {
+        observer.unobserve(loadTarget);
+        container.transition()
+          .style("opacity", 1);
+
+        options = selector
+          .selectAll("option")
+            .data(cities)
+          .enter().append("option")
+            .property("value", d => d)
+            .text(d => d);
+        options.filter(d => d == "Canberra")
+          .attr("selected", true);
+
+        scaleX = d3.scaleLinear()
+          .domain([-max, max]);
+
+        scaleY = d3.scaleBand()
+          .domain(ages)
+          .paddingInner(.05);
+        
+        scaleAge = d3.scaleLinear()
+          .domain([0, 85]);
+
+        axisX = d3.axisBottom(scaleX)
+          .tickValues([-.04, -.02, .02, .04])
+          .tickFormat(d => d3.format(".0%")(Math.abs(d)));
+
+        axisAge = d3.axisLeft(scaleAge)
+          .tickValues([0, 20, 40, 60, 85])
+          .tickFormat(d => d < 85 ? d : "85+")
+          .tickSize(0)
+          .tickPadding(0);
+
+        males = chartGroup
+          .selectAll(".male.age")
+            .data(d3.range(ages.length))
+          .enter().append("rect")
+            .classed("male", true)
+            .classed("age", true)
+            .attr("width", 0);
+
+        females = chartGroup
+          .selectAll(".female.age")
+            .data(d3.range(ages.length))
+          .enter().append("rect")
+            .classed("female", true)
+            .classed("age", true)
+            .attr("width", 0);
+
+        changes = 0;
+        changeCity();
+      }
+
+      function changeCity() {
+        changes = changes + 1;        
+        city = selector.property("value");
+        drawData = chartData
+          .filter(d => d.city == city)[0];
+
+        window.addEventListener("resize", resize);
+        resize();
+      }
+
+      function resize() {
+        dimensions = document.getElementById("chart").getBoundingClientRect();
+        width = dimensions.width;
+        height = Math.max(width * .75, 450);
+
+        margin =  {
+          top: (width > 500 ? 0 : 10),
+          right: 0,
+          bottom: 20,
+          left: 0
+        };
+
+        // set chart height
+        chart.style("height", height + "px");
+        iframeHeight = (
+          document.getElementById("header").getBoundingClientRect().height +
+          document.getElementById("chart").getBoundingClientRect().height
+        );
+
+        // send dimensions to host window
+        window.parent.postMessage({
+          sentinel: "amp",
+          type: "embed-size",
+          height: iframeHeight
+        }, "*");
+
+        // redraw chart
+        scaleX.range([margin.left, width - margin.right]);
+        axisX.tickSizeOuter(0)
+          .tickSizeInner(margin.top + margin.bottom - height)
+          .tickPadding(5);
+        xAxisGroup.attr("transform", "translate(0, " + (height - margin.bottom )+ ")")
+          .call(axisX);
+
+        scaleY.range([height - margin.bottom, margin.top]);
+        scaleAge.range([height - margin.bottom - scaleY.bandwidth() / 2, margin.top + scaleY.bandwidth() / 2]);
+        yAxisGroup.attr("transform", "translate(" + ((width - margin.left - margin.right) / 2 + margin.left) + ", 0)")
+          .call(axisAge);
+
+        if (changes == 1) {
+          males.attr("x", scaleX(0));
+          females.attr("x", scaleX(0));
+        }
+
+        males.attr("height", scaleY.bandwidth())
+          .attr("y", d => scaleY(ages[d]))
+          .transition()
+            .attr("width", d => scaleX(drawData.males[d]) - scaleX(0))          
+            .attr("x", d => scaleX(0) - (scaleX(drawData.males[d]) - scaleX(0)));
+
+        females.attr("height", scaleY.bandwidth())
+          .attr("y", d => scaleY(ages[d]))
+          .transition()
+            .attr("width", d => scaleX(drawData.females[d]) - scaleX(0))          
+            .attr("x", scaleX(0));
+      }
+    </script>
+  </body>
+</html>
