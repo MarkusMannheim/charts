@@ -44,6 +44,10 @@
           <div class="box"></div>
           <div class="label">females</div>
         </div>
+        <div class="oz key">
+          <div class="boxOz"></div>
+          <div class="label">Australia-wide</div>
+        </div>
       </div>
     </div>
 
@@ -102,8 +106,9 @@
 
             chartData.push(object);
           }
-
+          
           max = d3.max(chartData, d => Math.max(d3.max(d.males), d3.max(d.females)));
+          ozData = chartData.filter(d => d.city == "Australia")[0];
 
           // await fonts
           document.fonts.onloadingdone = fontsReady();
@@ -131,7 +136,7 @@
 
         options = selector
           .selectAll("option")
-            .data(cities)
+            .data(cities.filter(d => d !== "Australia"))
           .enter().append("option")
             .property("value", d => d)
             .text(d => d);
@@ -166,6 +171,11 @@
             .classed("age", true)
             .attr("width", 0);
 
+        malesOzLine = chartGroup
+          .append("path")
+            .datum(d3.range(ages.length))
+            .classed("ageOzLine", true);
+
         females = chartGroup
           .selectAll(".female.age")
             .data(d3.range(ages.length))
@@ -173,6 +183,21 @@
             .classed("female", true)
             .classed("age", true)
             .attr("width", 0);
+
+        femalesOzLine = chartGroup
+          .append("path")
+            .datum(d3.range(ages.length))
+            .classed("ageOzLine", true);
+
+        ozLineM = d3.line()
+          .x(d => scaleX(0) - (scaleX(ozData.males[d]) - scaleX(0)))
+          .y(d => scaleY(ages[d]) + scaleY.bandwidth() / 2)
+          .curve(d3.curveStep);
+
+        ozLineF = d3.line()
+          .x(d => scaleX(ozData.females[d]))
+          .y(d => scaleY(ages[d]) + scaleY.bandwidth() / 2)
+          .curve(d3.curveStep);
 
         changes = 0;
         changeCity();
@@ -231,6 +256,20 @@
         if (changes == 1) {
           males.attr("x", scaleX(0));
           females.attr("x", scaleX(0));
+          malesOzLine.attr("d", d => 
+            d3.line()
+              .x(scaleX(0))
+              .y(d => scaleY(ages[d]) + scaleY.bandwidth() / 2)
+              .curve(d3.curveStep)
+              (d)
+          );
+          femalesOzLine.attr("d", d => 
+            d3.line()
+              .x(scaleX(0))
+              .y(d => scaleY(ages[d]) + scaleY.bandwidth() / 2)
+              .curve(d3.curveStep)
+              (d)
+          );
         }
 
         males.attr("height", scaleY.bandwidth())
@@ -244,6 +283,11 @@
           .transition()
             .attr("width", d => scaleX(drawData.females[d]) - scaleX(0))          
             .attr("x", scaleX(0));
+
+        malesOzLine.transition()
+          .attr("d", ozLineM);
+        femalesOzLine.transition()
+          .attr("d", ozLineF);
       }
     </script>
   </body>

@@ -66,25 +66,37 @@ body {
 }
 .key {
   display: flex;
+  margin-right: 1rem;
 }
 .box {  
   width:  1.1rem;
   height:  1.1rem;
   margin-right: .5rem;
 }
+.boxOz {  
+  width:  1.1rem;
+  height:  .55rem;
+  margin-right: .5rem;
+  border-bottom: #cc4e00 solid 3px;
+}
 .label {
   font-family: ABCSansNovaRegular, Helvetica, sans-serif;
   line-height: 1.1rem;
   font-size: 1.1rem;
 }
-.key.men {
-  margin-right: 1rem;
+.key.oz {
+  margin-right: 0;
 }
 .men .box {  
   background: #009de5;
 }
 .women .box {  
   background: #623980;
+}
+.ageOzLine {
+  stroke: #cc4e00;
+  stroke-width: 3;
+  fill: none;
 }
 
 @media only screen and (max-width: 500px) {
@@ -104,6 +116,14 @@ body {
   .box {  
     width:  .9rem;
     height:  .9rem;
+  }
+  .ageOzLine {
+    stroke-width: 2;
+  }
+  .boxOz {  
+    width:  .9rem;
+    height:  .45rem;
+    border-bottom: #cc4e00 solid 2px;
   }
   .label {
     line-height: .9rem;
