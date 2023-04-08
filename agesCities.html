@@ -204,7 +204,8 @@
         chart.style("height", height + "px");
         iframeHeight = (
           document.getElementById("header").getBoundingClientRect().height +
-          document.getElementById("chart").getBoundingClientRect().height
+          document.getElementById("chart").getBoundingClientRect().height +
+          document.getElementById("footer").getBoundingClientRect().height
         );
 
         // send dimensions to host window
