@@ -191,13 +191,13 @@
 
         ozLineM = d3.line()
           .x(d => scaleX(0) - (scaleX(ozData.males[d]) - scaleX(0)))
-          .y(d => scaleY(ages[d]) + scaleY.bandwidth() / 2)
-          .curve(d3.curveStep);
+          .y(d => scaleY(ages[d]))
+          .curve(d3.curveStepAfter);
 
         ozLineF = d3.line()
           .x(d => scaleX(ozData.females[d]))
-          .y(d => scaleY(ages[d]) + scaleY.bandwidth() / 2)
-          .curve(d3.curveStep);
+          .y(d => scaleY(ages[d]))
+          .curve(d3.curveStepAfter);
 
         changes = 0;
         changeCity();
@@ -260,16 +260,12 @@
             d3.line()
               .x(scaleX(0))
               .y(d => scaleY(ages[d]) + scaleY.bandwidth() / 2)
-              .curve(d3.curveStep)
-              (d)
-          );
+              .curve(d3.curveStep)(d));
           femalesOzLine.attr("d", d => 
             d3.line()
               .x(scaleX(0))
               .y(d => scaleY(ages[d]) + scaleY.bandwidth() / 2)
-              .curve(d3.curveStep)
-              (d)
-          );
+              .curve(d3.curveStep)(d));
         }
 
         males.attr("height", scaleY.bandwidth())
@@ -285,9 +281,21 @@
             .attr("x", scaleX(0));
 
         malesOzLine.transition()
-          .attr("d", ozLineM);
+          .attr("d", d => {
+            let string = ozLineM(d);
+            string = "M" + string.slice(1, string.indexOf(",")) +
+              "," + (height - margin.bottom) + "L" + 
+              string.slice(1);
+            return string;
+          });
         femalesOzLine.transition()
-          .attr("d", ozLineF);
+          .attr("d", d => {
+            let string = ozLineF(d);
+            string = "M" + string.slice(1, string.indexOf(",")) +
+              "," + (height - margin.bottom) + "L" + 
+              string.slice(1);
+            return string;
+          });
       }
     </script>
   </body>
