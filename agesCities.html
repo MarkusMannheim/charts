@@ -200,6 +200,7 @@
           .curve(d3.curveStepAfter);
 
         changes = 0;
+        window.addEventListener("resize", resize);
         changeCity();
       }
 
@@ -208,8 +209,6 @@
         city = selector.property("value");
         drawData = chartData
           .filter(d => d.city == city)[0];
-
-        window.addEventListener("resize", resize);
         resize();
       }
 

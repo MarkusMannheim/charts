@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-155991615-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag("js", new Date());
+      gtag("config", "UA-155991615-1");
+    </script>
+
+    <!-- metaphysics -->
+    <meta charset="utf-8">
+    <title>Canberra's age profile over time</title>
+    <meta name="author" content="Markus Mannheim">
+    <meta name="keywords" content="act, canberra, population, ages, data, time, longitudinal">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- scripts -->
+    <script src="./resources/d3.v7.min.js"></script>
+    <link href="./resources/agesCanberraStyle.css" rel="stylesheet">
+    <link href="./resources/abcLogo64.png" rel="icon">
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="header">
+        <div id="yearLabel">1971</div>
+      </div>
+      <div id="slider">
+        <input type="range" value="1971" min="1971" max="2022" onchange="touchSlider()"></input>
+      </div>
+      <div id="legend"></div>
+      <svg id="chart">
+        <g id="chartGroup">
+          <defs>
+            <clipPath id="fewer">
+              <path></path>
+            </clipPath>
+            <clipPath id="more">
+              <path></path>
+            </clipPath>
+          </defs>
+          <rect id="fewerColor"></rect>
+          <rect id="moreColor"></rect>
+        </g>
+        <g id="axisGroup">
+          <g id="xAxisGroup" class="axis"></g>
+          <g id="yAxisGroup" class="axis"></g>
+        </g>
+      </svg>      
+    </div>
+
+    <script>
+      // elements
+      container = d3.select("#container");
+      header = d3.select("#header");
+      yearLabel = d3.select("#yearLabel");
+      slider = d3.select("#slider input");
+      legend = d3.select("#legend");
+      chart = d3.select("#chart");
+      chartGroup = d3.select("#chartGroup");
+      xAxisGroup = d3.select("#xAxisGroup");
+      yAxisGroup = d3.select("#yAxisGroup");
+      fewer = d3.select("#fewer path");
+      more = d3.select("#more path");
+      fewerColor = d3.select("#fewerColor");
+      moreColor = d3.select("#moreColor");
+
+      // load data
+      d3.csv("./data/act_longitudinal.csv")
+        .then(function(data) {
+          // format data
+          data = data
+            .map(d => {
+              let datum = {};              
+              for (key of Object.keys(d)) {
+                if (key == "area") {
+                  datum.area = d.area;
+                } else if (key == "date") {
+                  datum.year = (new Date(d.date)).getYear() + 1900;
+                } else {
+                  datum[key] = +d[key];
+                }              
+              }
+              return datum;
+            });          
+
+          // process data
+          years = d3.range(1971, 2023);
+          ages = d3.range(0, 101);
+          chartData = [];
+          for (year of years) {
+            let datum = {
+              year: year,
+              data: []
+            };
+            let data_year = data
+              .filter(d => d.year == year);
+            for (age of ages) {
+              datum["data"].push(data_year[0]["age_" + age] - data_year[1]["age_" + age]);
+            }
+            chartData.push(datum);
+          }
+
+          max = Math.max(
+            d3.min(chartData, d => d3.min(d.data)),
+            d3.max(chartData, d => d3.max(d.data))
+          );
+
+          // await fonts
+          document.fonts.onloadingdone = fontsReady();
+        });
+
+      function fontsReady() {
+        // await user (scroll to map)
+        loadTarget = document.querySelector("#chart");
+
+        // set up frame activation
+        observer = new IntersectionObserver(loadFrame, {threshold: 0.5});
+        observer.observe(loadTarget);
+      }
+
+      function loadFrame(interactionObjects) {
+        interactionObjects.map(function(object) {
+          if (object.isIntersecting) drawChart();
+        });
+      }
+
+      function drawChart() {
+        observer.unobserve(loadTarget);
+
+        container.transition()
+          .style("opacity", 1);
+
+        scaleX = d3.scaleLinear()
+          .domain([-max, max]);
+        scaleY = d3.scaleLinear()
+          .domain([0, 100]);
+        
+        xAxis = d3.axisTop(scaleX)
+          .tickValues([-.004, 0, .004])
+          .tickFormat(d => d < 0 ? "🡄 FEWER" : d == 0 ? "" : "MORE 🡆")
+          .tickSizeOuter(0);
+        yAxis = d3.axisLeft(scaleY)
+          .ticks(5, ".0f")
+          .tickSizeOuter(0)
+          .tickPadding(10);
+
+        area = d3.area()          
+          .x0(() => scaleX(0))
+          .x1(d => scaleX(d))
+          .y((d, i) => scaleY(i));
+
+        changes = 0;
+        window.addEventListener("resize", resize);
+        changeYear();
+        animate = true;
+        animation();
+      }
+
+      function animation() {
+        d3.timeout(() => {
+          tick = d3.interval(() => {
+            if (animate && year < 2022) {
+              year = year + 1;
+              slider.property("value", year.toString());
+              changeYear();
+            } else if (animate && year == 2022) {
+              restartAnimation();
+              tick.stop();              
+            } else {
+              tick.stop();
+            }
+          }, 250);
+        }, 1500);
+
+        function restartAnimation() {
+          d3.timeout(() => {
+            if (animate) {
+              year = 1970;
+              slider.property("value", "1971");
+              changeYear();
+              animation();
+            }
+          }, 2500);
+        }
+      }
+
+      function touchSlider() {
+        animate = false;
+        changeYear();
+      }
+
+      function changeYear() {
+        year = +slider.property("value");
+        yearLabel.text(year);
+        yearData = chartData
+          .filter(d => d.year == year)[0]["data"];
+        fewer.datum(yearData);
+        more.datum(yearData);
+        resize();
+      }
+
+      function resize() {
+        dimensions = document.getElementById("chart").getBoundingClientRect();
+        width = dimensions.width;
+        height = Math.max(width * .75, 450);
+
+        margin =  {
+          top: (width > 500 ? 50: 40),
+          right: 0,
+          bottom: (width > 500 ? 10: 5),
+          left: (width > 500 ? 40: 35)
+        };
+
+        // set chart height
+        chart.style("height", height + "px");
+        iframeHeight = (
+          document.getElementById("header").getBoundingClientRect().height +
+          document.getElementById("chart").getBoundingClientRect().height
+        );
+
+        // send dimensions to host window
+        window.parent.postMessage({
+          sentinel: "amp",
+          type: "embed-size",
+          height: iframeHeight
+        }, "*");
+
+        // redraw chart
+        scaleX.range([margin.left, width - margin.right]);
+        scaleY.range([height - margin.bottom, margin.top]);
+        xAxis.tickSizeInner(margin.top + margin.bottom - height)
+          .tickPadding(width > 500 ? 16 : 10);
+        yAxis.tickSizeInner(margin.left + margin.right - width);
+        xAxisGroup.attr("transform", "translate(0, " + margin.top + ")")
+          .call(xAxis);
+        yAxisGroup.attr("transform", "translate(" + margin.left + ", 0)")
+          .call(yAxis);
+        xAxisGroup.select(".tick text")
+          .style("fill", "#cc4e00");
+        xAxisGroup.select(".tick:last-child text")
+          .style("fill", "#037cc2");
+
+        fewerColor.attr("width", scaleX(0) - margin.left)
+          .attr("height", height - margin.bottom)
+          .attr("x", margin.left)
+          .attr("y", 0);
+        moreColor.attr("width", scaleX(0) - margin.left)
+          .attr("height", height - margin.bottom)
+          .attr("x", scaleX(0))
+          .attr("y", 0);
+        fewer.transition()
+          .ease(d3.easeLinear)
+          .attr("d", area);
+        more.transition()
+          .ease(d3.easeLinear)
+          .attr("d", area);
+      }
+    </script>
+  </body>
+</html>
