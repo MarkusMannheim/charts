@@ -31,7 +31,6 @@
       <div id="slider">
         <input type="range" value="1971" min="1971" max="2022" onchange="touchSlider()"></input>
       </div>
-      <div id="legend"></div>
       <svg id="chart">
         <g id="chartGroup">
           <defs>
@@ -58,7 +57,6 @@
       header = d3.select("#header");
       yearLabel = d3.select("#yearLabel");
       slider = d3.select("#slider input");
-      legend = d3.select("#legend");
       chart = d3.select("#chart");
       chartGroup = d3.select("#chartGroup");
       xAxisGroup = d3.select("#xAxisGroup");
