@@ -139,7 +139,7 @@
         
         xAxis = d3.axisTop(scaleX)
           .tickValues([-.004, 0, .004])
-          .tickFormat(d => d < 0 ? "🡄 FEWER" : d == 0 ? "" : "MORE 🡆")
+          .tickFormat(d => d < 0 ? "\u2B05 FEWER" : d == 0 ? "" : "MORE \u2B95")
           .tickSizeOuter(0);
         yAxis = d3.axisLeft(scaleY)
           .ticks(5, ".0f")
