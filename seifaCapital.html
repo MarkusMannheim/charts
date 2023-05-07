@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-155991615-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag("js", new Date());
+      gtag("config", "UA-155991615-1");
+    </script>
+
+    <!-- metaphysics -->
+    <meta charset="utf-8">
+    <title>Capitals vs regions</title>
+    <meta name="author" content="Markus Mannheim">
+    <meta name="keywords" content="seifa, australia, socioeconomic, indexes, areas, advantage, disadvantage, abs, data, chart">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- scripts -->
+    <script src="./resources/d3.v7.min.js"></script>
+    <link href="./resources/seifa.css" rel="stylesheet">
+    <link href="./resources/abcLogo64.png" rel="icon">
+  </head>
+
+  <body>
+    <div id="container"></div>
+
+    <script>
+      // elements
+      container = d3.select("#container");
+
+      // load data
+      d3.csv("./data/seifa_capital.csv")
+        .then(data => {
+          // format data
+          chartData = data
+            .map(d => {
+              for (key of Object.keys(d)) {
+                d[key] = +d[key];
+              }
+              return d;
+            });
+
+          // await fonts
+          document.fonts.onloadingdone = fontsReady();
+        });
+
+      function fontsReady() {
+        // await user (scroll to map)
+        loadTarget = document.querySelector("#container");
+
+        // set up frame activation
+        observer = new IntersectionObserver(loadFrame, {threshold: 0.5});
+        observer.observe(loadTarget);
+      }
+
+      function loadFrame(interactionObjects) {
+        interactionObjects.map(function(object) {
+          if (object.isIntersecting) drawChart();
+        });
+      }
+
+      function drawChart() {
+        observer.unobserve(loadTarget);
+
+        // create two charts
+        charts = container
+          .selectAll("svg")
+            .data(["capital", "country"])
+          .enter().append("svg")
+            .attr("id", (d, i) => "chart" + i);
+
+        charts.append("g")
+          .classed("chartGroup", true)
+          .selectAll("rect")
+            .data(chartData)
+          .enter().append("rect")
+            .classed("bar", true);
+        charts.append("g")
+          .classed("axis y", true);
+        charts.append("g")
+          .classed("axis x", true)
+          .append("text")
+            .classed("axisLabel", true)
+            .text("SEIFA decile");
+
+        charts.append("text")
+          .classed("title", true)
+          .text((d, i) => ["CAPITAL CITIES", "OTHER AREAS"][i]);
+
+        xScale = d3.scaleBand()
+          .domain(chartData.map(d => d.decile))
+          .padding(0);
+        yScale = d3.scaleLinear()
+          .domain([0, d3.max(chartData, d => d3.max([d.capital, d.country]))]).nice();
+
+        window.addEventListener("resize", resize);
+        resize();
+      }
+
+      function resize() {
+        dimensions = document.getElementById("chart1").getBoundingClientRect();
+        width = dimensions.width;
+        height = width;
+        mobile = document.getElementById("container").getBoundingClientRect().width < 500;
+
+        // set chart height
+        container.selectAll("svg")
+          .style("height", height + "px");
+        
+        // redraw chart
+        titleHeight = d3.select("svg")
+          .select(".title").node()
+          .getBBox().height;
+        
+        d3.selectAll(".title")
+          .attr("x", width / 2)
+          .attr("y", titleHeight);
+
+        margin = {
+          top: titleHeight + (mobile ? 5 : 10),
+          right: 0,
+          left: (mobile ? 25: 30),
+          bottom:  (mobile ? 30: 35)
+        };
+
+        xScale.range([margin.left, width - margin.right]);
+        yScale.range([height - margin.bottom, margin.top]);
+
+        charts.selectAll(".x")
+          .attr("transform", (d, i) => "translate(0, " + (height - margin.bottom) + ")")
+          .call(d3.axisBottom(xScale)
+            .tickSize(0)
+            .tickPadding(5)
+          )
+          .select(".axisLabel")
+            .attr("x", margin.left + (width - margin.left - margin.right) / 2)
+            .attr("y", margin.bottom);
+
+        charts.selectAll(".y")
+          .attr("transform", (d, i) => "translate(" + margin.left + ", 0)")
+          .call(d3.axisLeft(yScale)
+            .tickSizeOuter(0)
+            .tickSizeInner(margin.left + margin.right - width)
+            .tickPadding(5)
+            .ticks(4, ".0%")
+          );
+        
+        charts.each((d, i) => {
+          let region = d;
+          d3.select("#chart" + i)
+            .selectAll(".bar")
+              .attr("width", xScale.bandwidth())
+              .attr("x", e => xScale(e.decile))
+              .attr("y", e => yScale(e[region]))
+              .attr("height", e => yScale(0) - yScale(e[region]));
+        });
+        
+        // send dimensions to host window
+        window.parent.postMessage({
+          sentinel: "amp",
+          type: "embed-size",
+          height: (document.getElementById("container").getBoundingClientRect().height)
+        }, "*");
+      }
+    </script>
+  </body>
+</html>

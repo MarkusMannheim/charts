@@ -1,0 +1,78 @@
+@font-face {
+ font-family: ABCSansNovaRegular;
+ src: url(../fonts/ABCSansNova-Regular.otf);
+}
+@font-face {
+ font-family: ABCSansNovaBlack;
+ src: url(../fonts/ABCSansNova-Black.otf);
+}
+@font-face {
+ font-family: ABCSansNovaLight;
+ src: url(../fonts/ABCSansNova-Light.otf);
+}
+:root {
+  font-size: 1em;
+  font-family: ABCSansNovaBlack, "Arial Black", Helvetica, sans-serif;
+  box-sizing: border-box;
+  color: #001533;
+}
+body {
+  margin: 0;
+  overflow: hidden;
+}
+#container {
+  display: flex;
+  flex-flow: row;
+  justify-content: space-between;
+}
+#container svg {
+  width: 100%;
+}
+#container svg:first-child {
+  margin-right: 1rem;
+}
+.title {
+  font-size: 1.1rem;
+  text-anchor: middle;
+  fill: #037cc2;
+}
+.bar {
+  fill: #037cc2;
+  stroke: white;
+}
+svg:last-child .title {
+  fill: #00238b;
+}
+svg:last-child .bar {
+  fill: #00238b;  
+}
+.axis .tick text {
+  font-family: ABCSansNovaRegular, Helvetica, sans-serif;
+  fill: #68788e;
+  font-size: .9rem;
+}
+.axis .tick line {
+  stroke: #68788e;
+  stroke-dasharray: 2 3;
+}
+.axis .domain {
+  stroke: #68788e;
+}
+.axisLabel {
+  fill: #001533;
+  font-family: ABCSansNovaRegular, Helvetica, sans-serif;
+  font-weight: bold;
+  font-size: .8rem;
+}
+
+@media only screen and (max-width: 500px) {
+  .title {
+    font-size: .9rem;
+  }
+  .axis .tick text {
+    font-size: .75rem;
+  }
+  .axisLabel {
+    font-size: .7rem;
+  }
+}
