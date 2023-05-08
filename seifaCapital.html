@@ -122,7 +122,7 @@
           top: titleHeight + (mobile ? 5 : 10),
           right: 0,
           left: (mobile ? 25: 30),
-          bottom:  (mobile ? 30: 35)
+          bottom:  (mobile ? 35: 40)
         };
 
         xScale.range([margin.left, width - margin.right]);
@@ -136,7 +136,7 @@
           )
           .select(".axisLabel")
             .attr("x", margin.left + (width - margin.left - margin.right) / 2)
-            .attr("y", margin.bottom);
+            .attr("y", margin.bottom - 5);
 
         charts.selectAll(".y")
           .attr("transform", (d, i) => "translate(" + margin.left + ", 0)")
