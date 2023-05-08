@@ -117,17 +117,17 @@
         titleHeight = d3.select("svg")
           .select(".title").node()
           .getBBox().height;
-        
-        d3.selectAll(".title")
-          .attr("x", width / 2)
-          .attr("y", titleHeight);
-
+         
         margin = {
-          top: titleHeight + (mobile ? 5 : 10),
+          top: (mobile ? 5 : 10),
           right: 0,
           left: (mobile ? 30: 35),
-          bottom:  (mobile ? 15: 20)
+          bottom: titleHeight + (mobile ? 15: 20)
         };
+
+        d3.selectAll(".title")
+          .attr("x", width / 2)
+          .attr("y", height - 5);
 
         xScale.range([margin.left, width - margin.right]);
         yScale.range([height - margin.bottom, margin.top]);
