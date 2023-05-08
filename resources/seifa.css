@@ -52,11 +52,11 @@ svg:last-child .bar {
   font-size: .9rem;
 }
 .axis .tick line {
-  stroke: #68788e;
+  stroke: #8495a9;
   stroke-dasharray: 2 3;
 }
 .axis .domain {
-  stroke: #68788e;
+  stroke: #8495a9;
 }
 .axisLabel {
   fill: #001533;
