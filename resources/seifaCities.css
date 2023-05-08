@@ -22,29 +22,24 @@ body {
 }
 #container {
   display: flex;
-  flex-flow: row;
+  flex-flow: wrap;
   justify-content: space-between;
+}
+#container>* {
+  flex: 1 1 35%;
 }
 #container svg {
   width: 100%;
 }
-#container svg:first-child {
+#container svg:nth-child(odd) {
   margin-right: 1rem;
 }
 .title {
   font-size: 1.1rem;
   text-anchor: middle;
-  fill: #037cc2;
 }
 .bar {
-  fill: #037cc2;
   stroke: white;
-}
-svg:last-child .title {
-  fill: #00238b;
-}
-svg:last-child .bar {
-  fill: #00238b;  
 }
 .axis .tick text {
   font-family: ABCSansNovaRegular, Helvetica, sans-serif;
@@ -66,9 +61,6 @@ svg:last-child .bar {
 }
 
 @media only screen and (max-width: 500px) {
-  #container svg:first-child {
-    margin-right: .5rem;
-  }
   .title {
     font-size: .9rem;
   }
