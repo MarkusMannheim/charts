@@ -77,21 +77,21 @@
 
         charts.append("g")
           .classed("chartGroup", true)
+          .style("fill", (d, i) => colours[i])
           .selectAll("rect")
             .data(chartData)
           .enter().append("rect")
             .classed("bar", true);
+
         charts.append("g")
           .classed("axis y", true);
         charts.append("g")
           .classed("axis x", true);
-          // .append("text")
-          //   .classed("axisLabel", true)
-          //   .text("SEIFA decile");
 
         charts.append("text")
           .classed("title", true)
-          .text((d, i) => d);
+          .text((d, i) => d.toUpperCase())
+          .style("fill", (d, i) => colours[i]);
 
         xScale = d3.scaleBand()
           .domain(chartData.map(d => d.decile))
@@ -114,52 +114,49 @@
           .style("height", height + "px");
         
         // redraw chart
-        // titleHeight = d3.select("svg")
-        //   .select(".title").node()
-        //   .getBBox().height;
+        titleHeight = d3.select("svg")
+          .select(".title").node()
+          .getBBox().height;
         
-        // d3.selectAll(".title")
-        //   .attr("x", width / 2)
-        //   .attr("y", titleHeight);
+        d3.selectAll(".title")
+          .attr("x", width / 2)
+          .attr("y", titleHeight);
 
-        // margin = {
-        //   top: titleHeight + (mobile ? 5 : 10),
-        //   right: 0,
-        //   left: (mobile ? 25: 30),
-        //   bottom:  (mobile ? 35: 40)
-        // };
+        margin = {
+          top: titleHeight + (mobile ? 5 : 10),
+          right: 0,
+          left: (mobile ? 30: 35),
+          bottom:  (mobile ? 15: 20)
+        };
 
-        // xScale.range([margin.left, width - margin.right]);
-        // yScale.range([height - margin.bottom, margin.top]);
+        xScale.range([margin.left, width - margin.right]);
+        yScale.range([height - margin.bottom, margin.top]);
 
-        // charts.selectAll(".x")
-        //   .attr("transform", (d, i) => "translate(0, " + (height - margin.bottom) + ")")
-        //   .call(d3.axisBottom(xScale)
-        //     .tickSize(0)
-        //     .tickPadding(5)
-        //   )
-        //   .select(".axisLabel")
-        //     .attr("x", margin.left + (width - margin.left - margin.right) / 2)
-        //     .attr("y", margin.bottom - 5);
+        charts.selectAll(".x")
+          .attr("transform", (d, i) => "translate(0, " + (height - margin.bottom) + ")")
+          .call(d3.axisBottom(xScale)
+            .tickSize(0)
+            .tickPadding(5)
+          );
 
-        // charts.selectAll(".y")
-        //   .attr("transform", (d, i) => "translate(" + margin.left + ", 0)")
-        //   .call(d3.axisLeft(yScale)
-        //     .tickSizeOuter(0)
-        //     .tickSizeInner(margin.left + margin.right - width)
-        //     .tickPadding(5)
-        //     .ticks(4, ".0%")
-        //   );
+        charts.selectAll(".y")
+          .attr("transform", (d, i) => "translate(" + margin.left + ", 0)")
+          .call(d3.axisLeft(yScale)
+            .tickSizeOuter(0)
+            .tickSizeInner(margin.left + margin.right - width)
+            .tickPadding(5)
+            .ticks(4, ".0%")
+          );
         
-        // charts.each((d, i) => {
-        //   let region = d;
-        //   d3.select("#chart" + i)
-        //     .selectAll(".bar")
-        //       .attr("width", xScale.bandwidth())
-        //       .attr("x", e => xScale(e.decile))
-        //       .attr("y", e => yScale(e[region]))
-        //       .attr("height", e => yScale(0) - yScale(e[region]));
-        // });
+        charts.each((d, i) => {
+          let city = d;
+          d3.select("#chart" + i)
+            .selectAll(".bar")
+              .attr("width", xScale.bandwidth())
+              .attr("x", e => xScale(e.decile))
+              .attr("y", e => yScale(e[city]))
+              .attr("height", e => yScale(0) - yScale(e[city]));
+        });
         
         // send dimensions to host window
         window.parent.postMessage({
