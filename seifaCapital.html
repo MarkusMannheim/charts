@@ -43,7 +43,7 @@
             });
 
           // await fonts
-          document.fonts.onloadingdone = fontsReady();
+          document.fonts.onloadingdone = drawChart();
         });
 
       function fontsReady() {
@@ -62,7 +62,7 @@
       }
 
       function drawChart() {
-        observer.unobserve(loadTarget);
+        // observer.unobserve(loadTarget);
 
         // create two charts
         charts = container
