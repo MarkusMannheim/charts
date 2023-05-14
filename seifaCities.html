@@ -47,7 +47,7 @@
           colours = ["#009de5", "#d45f5f", "#002b66", "#6450b3", "#be6aa5", "#675e73", "#007a51", "#037cc2"];
 
           // await fonts
-          document.fonts.onloadingdone = fontsReady();
+          document.fonts.onloadingdone = drawChart();
         });
 
       function fontsReady() {
@@ -66,7 +66,7 @@
       }
 
       function drawChart() {
-        observer.unobserve(loadTarget);
+        // observer.unobserve(loadTarget);
 
         // create charts
         charts = container
