@@ -128,3 +128,30 @@ option {
     stroke-width: 1;
   }
 }
+
+@media (prefers-color-scheme: dark) {
+  body.darkMode {
+    color: white;
+    background: black;
+  }
+  .darkMode .axis .tick line {
+    stroke: #ccc;
+  }
+  .darkMode .axis .tick text {
+    fill: white;
+  }
+  .darkMode #tip {
+    background: #037cc2;
+    color: white;
+  }
+  .darkMode .enrolments {
+    stroke: #009de5;
+  }
+  .darkMode .node {
+    fill: black;
+    stroke: #009de5;
+  }
+  .darkMode .node.selected {
+    fill: #f26d00;
+  }
+}

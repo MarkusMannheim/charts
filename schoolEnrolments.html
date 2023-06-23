@@ -75,6 +75,9 @@
         }
       });
 
+      // dark mode
+      darkModeCheck();
+
       // load data
       d3.csv("./data/schoolProjections.csv")
         .then(function(data) {
@@ -125,29 +128,10 @@
             .y(function(d) { return y(d.enrolments); });
 
           // await fonts
-          document.fonts.onloadingdone = fontsReady();
+          document.fonts.onloadingdone = drawChart();
         });
-
-      function fontsReady(d) {
-        // await user (scroll to map)
-        loadTarget = document.querySelector("#footer");
-
-        // set up frame activation
-        observer = new IntersectionObserver(loadFrame, {
-          threshold: 1
-        });
-        ready = false;
-        observer.observe(loadTarget);
-      }
-
-      function loadFrame(interactionObjects) {
-        interactionObjects.map(function(object) {
-          if (!ready && object.isIntersecting) drawChart();
-        });
-      }
 
       function drawChart() {
-        ready = true;
         window.addEventListener("resize", resize);
         changeSchool();
       }
@@ -272,6 +256,18 @@
         d3.selectAll(".node").classed("selected", false);
         pointer.style("display", "none");
         tip.style("opacity", 0);
+      }
+
+      function darkModeCheck() {
+        let testString = window && window.location !== window.parent.location ?
+          document.referrer :
+          document.location.href;
+        
+        let darkMode = testString
+          .includes("newsapp");
+
+        d3.select("body")
+          .classed("darkMode", darkMode);
       }
     </script>
   </body>
