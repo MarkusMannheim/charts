@@ -33,7 +33,7 @@
           <text id="dayLabel"></text>
         </g>
       </svg>
-      <div id="footer">Every first minimum temperature of the year below 2C since 1940, measured in days before or after <span></span> Day.<br>Sources: Bureau of Meteorology, ABC analysis
+      <div id="footer">Every <span></span> minimum temperature of the year below 2C since 1940, measured in days before or after <span></span> Day.<br>Sources: Bureau of Meteorology, ABC analysis
       </div>
     </div>
 
@@ -56,8 +56,10 @@
         "First potential frost of the year" : 
         "Last potential frost of the year"
       );
-      footer.select("span")
+      footer.select("span:last-child")
         .text(day == "anzac" ? "Anzac" : "Melbourne Cup");
+      footer.select("span")
+        .text(day == "anzac" ? "first" : "last");
       dayLabel.text(day == "anzac" ? "Anzac Day" : "Melbourne Cup Day");
 
       // dark mode
