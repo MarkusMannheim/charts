@@ -172,7 +172,7 @@
             .attr("width", x.bandwidth())
             .attr("height", y.bandwidth())
             .transition()
-              .delay((d, i) => i * 75)
+              .delay((d, i) => i * 100)
               .attr("y", d => y(d.height))
               .style("opacity", 1);
 
