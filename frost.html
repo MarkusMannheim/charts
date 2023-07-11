@@ -101,9 +101,7 @@
 
           axis = d3.axisBottom(x)
             .tickSize(0)
-            .tickPadding(8)
-            .tickValues([minDay, 0, maxDay])
-            .tickFormat((d, i) => ["\u25C0 days before", "0", "days after \u25B6"][i]);
+            .tickPadding(8);
 
           // await fonts
           document.fonts.onloadingdone = drawChart();
@@ -140,6 +138,14 @@
 
         x.range([margin.left, width - margin.right]);
         y.range([height - margin.bottom, margin.top]);
+
+        if (mobile) {
+          axis.tickValues([minDay, maxDay])
+            .tickFormat((d, i) => ["\u25C0 days before", "days after \u25B6"][i]);
+        } else {
+          axis.tickValues([minDay, 0, maxDay])
+            .tickFormat((d, i) => ["\u25C0 days before", "0", "days after \u25B6"][i]);
+        }
         
         axisGroup.attr("transform", "translate(0, " + (height - margin.bottom) + ")")
           .transition()
