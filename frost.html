@@ -56,9 +56,9 @@
         "First potential frost of the year" : 
         "Last potential frost of the year"
       );
-      footer.select("span:last-child")
+      footer.select("span:last-of-type")
         .text(day == "anzac" ? "Anzac" : "Melbourne Cup");
-      footer.select("span")
+      footer.select("span:first-child")
         .text(day == "anzac" ? "first" : "last");
       dayLabel.text(day == "anzac" ? "Anzac Day" : "Melbourne Cup Day");
 
