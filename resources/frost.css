@@ -1,0 +1,93 @@
+@font-face {
+  font-family: ABCSansNovaRegular;
+  src: url(../fonts/ABCSansNova-Regular.otf);
+}
+@font-face {
+  font-family: ABCSansNovaBlack;
+  src: url(../fonts/ABCSansNova-Black.otf);
+}
+@font-face {
+  font-family: ABCSansNovaLight;
+  src: url(../fonts/ABCSansNova-Light.otf);
+}
+:root {
+  font-size: 1em;
+  font-family: ABCSansNovaRegular, Helvetica, sans-serif;
+  color: #001533;
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  overflow: hidden;
+}
+#container {
+  position: fixed;
+  width: 100%;
+  display: flex;
+  flex-flow: column;
+}
+#header {
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+  font-family: ABCSansNovaBlack, "Arial Black", Helvetica, sans-serif;
+}
+#chart {
+  width: 100%;
+  opacity: 0;
+}
+#footer {
+  font-family: ABCSansNovaLight, "Arial Narrow", Helvetica, sans-serif;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #888;
+}
+#axisGroup {
+  opacity: 0;
+}
+#axisGroup .domain {
+  stroke: #8495a9;
+}
+#axisGroup .tick text {
+  font-family: ABCSansNovaLight, Helvetica, sans-serif;
+  font-size: .8rem;
+  fill: #001533;
+}
+#axisGroup .tick:first-of-type text {
+  text-anchor: start;
+}
+#axisGroup .tick:last-child text {
+  text-anchor: end;
+}
+#dayLine {
+  stroke: #cc4e00;
+  opacity: 0;
+}
+#dayLabel {
+  fill: #cc4e00;
+  text-anchor: middle;
+  font-weight: bold;
+  font-size: .8rem;
+  opacity: 0;
+}
+.frost {
+  fill: #009de5;
+  opacity: 0;
+}
+@media only screen and (max-width: 600px) {
+  .axis .tick text {
+    font-size: .75rem;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  body.darkMode {
+    color: white;
+    background: black;
+  }
+  .darkMode #axisGroup .tick text {
+    fill: white;
+  }
+  .darkMode #axisGroup .domain {
+    stroke: #e6e6e6;
+  }
+}

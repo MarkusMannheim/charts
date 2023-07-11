@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-155991615-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag("js", new Date());
+      gtag("config", "UA-155991615-1");
+    </script>
+
+    <!-- metaphysics -->
+    <meta charset="utf-8">
+    <title>Canberra frosts</title>
+    <meta name="author" content="Markus Mannheim">
+    <meta name="keywords" content="act, canberra, frost, weather, climate, data, bureau, meteorology, bom">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- scripts -->
+    <script src="./resources/d3.v7.min.js"></script>
+    <link href="./resources/frost.css" rel="stylesheet">
+    <link href="./resources/abcLogo64.png" rel="icon">
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="header"></div>
+      <svg id="chart">
+        <g id="axisGroup"></g>
+        <g id="chartGroup">
+          <line id="dayLine"></line>
+          <text id="dayLabel"></text>
+        </g>
+      </svg>
+      <div id="footer">Every first minimum temperature of the year below 2C since 1940, measured in days before or after <span></span> Day.<br>Sources: Bureau of Meteorology, ABC analysis
+      </div>
+    </div>
+
+    <script>
+      // elements
+      container = d3.select("#container");
+      header = d3.select("#header");
+      chart = d3.select("#chart");
+      chartGroup = d3.select("#chartGroup");
+      axisGroup = d3.select("#axisGroup");
+      dayLine = d3.select("#dayLine");
+      dayLabel = d3.select("#dayLabel");
+      footer = d3.select("#footer");
+
+      // parameters
+      params = new URLSearchParams(window.location.search);
+      day = params.get("day");
+      header.text(
+        day == "anzac" ?
+        "First potential frost of the year" : 
+        "Last potential frost of the year"
+      );
+      footer.select("span")
+        .text(day == "anzac" ? "Anzac" : "Melbourne Cup");
+      dayLabel.text(day == "anzac" ? "Anzac Day" : "Melbourne Cup Day");
+
+      // dark mode
+      darkModeCheck();
+
+      // load data
+      d3.csv("./data/frostData.csv")
+        .then(function(data) {
+
+          // format data
+          chartData = data
+            .map(function(d) {              
+              return {
+                year: +d["year"],
+                value: +d[day]
+              };
+            });
+
+          minDay = d3.min(chartData, d => d.value);
+          maxDay = d3.max(chartData, d => d.value);            
+          
+          x = d3.scaleBand()
+            .domain(d3.range(minDay, maxDay + 1))
+            .padding(0);
+
+          bins = new Array(maxDay - minDay + 1).fill(0);
+
+          chartData.forEach(d => {
+            bins[d.value - minDay] = bins[d.value - minDay] + 1;
+          });
+
+          y = d3.scaleBand()
+            .domain(d3.range(d3.max(bins)))
+            .padding(0);
+
+          chart.style("height", d3.max(bins) * 50);
+
+          console.log(y.domain());
+
+          axis = d3.axisBottom(x)
+            .tickSize(0)
+            .tickPadding(8)
+            .tickValues([minDay, 0, maxDay])
+            .tickFormat((d, i) => ["\u25C0 days before", "0", "days after \u25B6"][i]);
+
+          // await fonts
+          document.fonts.onloadingdone = drawChart();
+        });
+
+      function drawChart() {
+        heights = new Array(maxDay - minDay + 1).fill(0);        
+        chartData.forEach((d, i) => {
+          let height = heights[d.value - minDay];
+          heights[d.value - minDay] = heights[d.value - minDay] + 1;
+          chartData[i] = {
+            value: d.value,
+            height: height
+          };
+        });
+
+        window.addEventListener("resize", resize);
+
+        chart.transition()
+          .duration(1000)
+          .style("opacity", 1)
+          .on("end", resize);
+      }
+
+      function resize() {
+        dimensions = document.getElementById("chart").getBoundingClientRect();
+        width = dimensions.width;
+        height = dimensions.height;
+        mobile = width < 500;
+
+        margin = mobile ?
+          { top: 20, right: 0, bottom: 20, left: 0 } :
+          { top: 20, right: 0, bottom: 20, left: 0 };
+
+        x.range([margin.left, width - margin.right]);
+        y.range([height - margin.bottom, margin.top]);
+        
+        axisGroup.attr("transform", "translate(0, " + (height - margin.bottom) + ")")
+          .transition()
+            .duration(1000)
+            .style("opacity", 1)
+            .call(axis);
+
+        dayLine.attr("x1", x(0))
+          .attr("x2", x(0))
+          .attr("y1", margin.top - 5)
+          .attr("y2", height - margin.bottom)
+          .style("stroke-width", x.bandwidth())
+          .transition()
+            .duration(1000)
+            .style("opacity", 1);
+
+        dayLabel.attr("x", x(0))
+          .attr("y", margin.top - 10)
+          .transition()
+            .duration(1000)
+            .style("opacity", 1);
+
+        chartGroup.selectAll(".frost")
+          .remove();
+        frosts = chartGroup
+          .selectAll(".frost")
+            .data(chartData)
+          .enter().append("rect")
+            .classed("frost", true)
+            .attr("x", d => x(d.value))
+            .attr("y", maxDay)
+            .attr("width", x.bandwidth())
+            .attr("height", y.bandwidth())
+            .transition()
+              .delay((d, i) => i * 75)
+              .attr("y", d => y(d.height))
+              .style("opacity", 1);
+
+        // send dimensions to host window
+        window.parent.postMessage({
+          sentinel: "amp",
+          type: "embed-size",
+          height: (document.getElementById("container").getBoundingClientRect().height)
+        }, "*");
+      }
+
+      function darkModeCheck() {
+        let testString = window && window.location !== window.parent.location ?
+          document.referrer :
+          document.location.href;
+        
+        let darkMode = testString
+          .includes("newsapp");
+
+        d3.select("body")
+          .classed("darkMode", darkMode);
+      }
+    </script>
+  </body>
+</html>
