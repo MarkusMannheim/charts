@@ -92,10 +92,4 @@ body {
   .darkMode #axisGroup .tick text {  
     fill: #8495a9;
   }
-  .darkMode .temperature {
-    fill: #009de5;
-  }
-  .darkMode .temperature.week {
-    fill: #cc4e00;
-  }
 }
