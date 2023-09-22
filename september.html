@@ -27,7 +27,7 @@
     <div id="container">
       <svg id="chart">
         <g id="axisGroup">
-          <text id="axisLabel">maximum temperature</text>
+          <text id="axisLabel">Maximum temperatures in September</text>
         </g>
         <g id="chartGroup"></g>
       </svg>
@@ -82,15 +82,15 @@
         }, "*");
 
         radius = width / 100;
-        margin = { top: 20, right: 10, bottom: 10, left: 25};
+        margin = { top: 35, right: 10, bottom: 10, left: 25};
 
         // prepare chart
         y = d3.scaleLinear()
-          .domain(d3.extent(chartData, d => d.maximum)).nice()
+          .domain(d3.extent(chartData, d => d.maximum))
           .range([height - margin.bottom, margin.top]);
 
         axis = d3.axisLeft(y)
-          .ticks(5)
+          .ticks(mobile ? 5 : 10)
           .tickPadding(5)
           .tickSizeOuter(0)
           .tickSizeInner(margin.left + margin.right - width);
@@ -98,7 +98,7 @@
         axisGroup.attr("transform", "translate(" + margin.left + ", 0)")
           .call(axis);
         axisLabel.attr("x", -margin.left)
-          .attr("y", margin.top - 5);
+          .attr("y", margin.top - 15);
 
         beeswarm = beeswarmForce()
           .x(width / 2)

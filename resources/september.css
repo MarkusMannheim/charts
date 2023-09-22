@@ -31,13 +31,12 @@ body {
 #footer {
   font-family: ABCSansNovaLight, "Arial Narrow", Helvetica, sans-serif;
   margin-top: 10px;
-  font-size: 12px;
+  font-size: .9rem;
   color: #888;
 }
 #axisGroup #axisLabel {
   fill: #001533;
-  font-weight: bold;
-  font-size: .8rem;
+  font-size: 1.1rem;
   text-anchor: start;
 }
 #axisGroup .domain {
@@ -48,7 +47,7 @@ body {
   stroke-dasharray: 2 2;
 }
 #axisGroup .tick text {  
-  font-size: .9rem;
+  font-size: 1rem;
   fill: #001533;
 }
 .temperature {
@@ -62,8 +61,11 @@ body {
 }
 
 @media only screen and (max-width: 600px) {
+  #axisGroup #axisLabel {
+    font-size: 1rem;
+  }
   #axisGroup .tick text {
-    font-size: .75rem;
+    font-size: .9rem;
   }
 }
 
