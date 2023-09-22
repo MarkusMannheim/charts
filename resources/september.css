@@ -52,7 +52,8 @@ body {
 }
 .temperature {
   fill: #037cc2;
-  opacity: .75;
+  opacity: .5;
+  stroke: white;
 }
 .temperature.week {
   fill: #cc4e00;
