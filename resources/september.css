@@ -67,6 +67,9 @@ body {
   #axisGroup .tick text {
     font-size: .9rem;
   }
+  #footer {
+    font-size: .8rem;
+  }
 }
 
 @media (prefers-color-scheme: dark) {

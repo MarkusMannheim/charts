@@ -21,12 +21,16 @@ body {
   overflow: hidden;
 }
 #container {
-  width: 100%;  
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
   flex-flow: column;
 }
 #chart {
-  height: 1404px;
+  height: 100%;
 }
 #footer {
   font-family: ABCSansNovaLight, "Arial Narrow", Helvetica, sans-serif;
@@ -47,17 +51,64 @@ body {
   stroke-dasharray: 2 2;
 }
 #axisGroup .tick text {  
-  font-size: 1rem;
+  font-size: .9rem;
   fill: #001533;
 }
-.temperature {
-  fill: #037cc2;
+#averageLine {
+  stroke: #8495a9;
+  stroke-width: 7.5;
   opacity: .5;
-  stroke: white;
+  fill: none;
 }
-.temperature.week {
-  fill: #cc4e00;
-  opacity: 1;
+#currentLine {
+  stroke: #037cc2;
+  stroke-width: 3;
+  fill: none;
+}
+#predictionLower, #predictionUpper {
+  stroke: #037cc2;
+  stroke-width: 3;
+  stroke-dasharray: 4 2;
+  fill: none;
+}
+#predictionLine {
+  fill: rgba(0, 157, 229, .5);
+}
+#legend {
+  display: flex;
+  flex-flow: row;
+  justify-content: center;
+  margin-top: 10px;
+  font-size: .9rem;
+}
+#legend .key {
+  display: flex;
+  flex-flow: row;
+  margin-right: 1rem;
+}
+#legend:last-child .key {
+  margin-right: 0;
+}
+#legend .box {
+  height: 1.2rem;
+  width: 1.2rem;  
+  margin-right: .5rem;
+}
+#legend .label {
+  line-height: 1.2rem;
+}
+#legend .key:first-child .box {
+  height: .6rem;
+  border-bottom: #037cc2 solid;
+}
+#legend .key:nth-child(2) .box {
+  border: #037cc2 dotted;
+  height: .6rem;
+  background: rgba(0, 157, 229, .5);
+}
+#legend .key:last-child .box {
+  background: #8495a9;
+  opacity: .5;
 }
 
 @media only screen and (max-width: 600px) {
@@ -65,7 +116,41 @@ body {
     font-size: 1rem;
   }
   #axisGroup .tick text {
-    font-size: .9rem;
+    font-size: .8rem;
+  }
+  #footer {
+    font-size: .8rem;
+  }
+  #averageLine {
+    stroke-width: 5;
+  }
+  #legend {
+    flex-flow: column;
+    align-items: center;
+    font-size: .8rem;
+  }
+  #legend .key {
+    margin-right: 0;
+    margin-bottom: .25rem;
+  }
+  #legend:last-child .key {
+    margin-bottom: 0;
+  }
+  #legend .box {
+    height: 1.1rem;
+    width: 1.1rem;  
+    margin-right: 1rem;
+  }
+  #legend .label {
+    line-height: 1.1rem;
+  }
+  #legend .key:first-child .box {
+    height: .5rem;
+  }
+  #legend .key:nth-child(2) .box {
+    height: .9rem;
+  }
+  #legend .key:last-child .box {    
   }
 }
 
@@ -74,22 +159,25 @@ body {
     color: white;
     background: black;
   }
-  .darkMode #axisGroup .tick line {
-    stroke: #ccc;
-  }
-  .darkMode #axisGroup .tick text {
-    fill: white;
-  }  
   .darkMode #footer {
     color: #888;
   }
+  .darkMode #legend {
+    color: #ccc;
+  }
   .darkMode #axisGroup #axisLabel {
     fill: white;
-  }
+  }  
   .darkMode #axisGroup .tick line {
     stroke: #8495a9;
   }
-  .darkMode #axisGroup .tick text {  
+  .darkMode #axisGroup .tick text {      
     fill: #8495a9;
+  }
+  .darkMode #averageLine {
+    opacity: .75;
+  }
+  .darkMode #legend .key:last-child .box {
+    opacity: .75;
   }
 }

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-155991615-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag("js", new Date());
+      gtag("config", "UA-155991615-1");
+    </script>
+
+    <!-- metaphysics -->
+    <meta charset="utf-8">
+    <title>2023-24 summer temperatures</title>
+    <meta name="author" content="Markus Mannheim">
+    <meta name="keywords" content="act, canberra, airport, summer, climate, weather, temperature, celsius, degrees, prediction, forecast">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- scripts -->
+    <script src="./resources/d3.v7.min.js"></script>
+    <link href="./resources/predictions.css" rel="stylesheet">
+    <link href="./resources/abcLogo64.png" rel="icon">
+  </head>
+
+  <body>
+    <div id="container">
+      <svg id="chart">
+        <g id="axisGroup">
+          <g id="yAxisGroup" class="axis">
+            <text id="axisLabel">Monthly average temperatures</text>
+          </g>
+          <g id="xAxisGroup" class="axis"></g>
+        </g>
+        <g id="chartGroup">
+          <path id="averageLine"></path>
+          <path id="currentLine"></path>
+          <path id="predictionLine"></path>
+          <path id="predictionLower"></path>
+          <path id="predictionUpper"></path>
+        </g>
+      </svg>
+      <div id="legend">
+        <div class="key">
+          <div class="box"></div>
+          <div class="label">2023 observations</div>
+        </div>
+        <div class="key">
+          <div class="box"></div>
+          <div class="label">2023-24 prediction</div>
+        </div>
+        <div class="key">
+          <div class="box"></div>
+          <div class="label">long-term average</div>
+        </div>
+      </div>
+      <div id="footer">Average monthly temperatures at Canberra Airport.
+        Long-term averages are based on records from 1961 to 1990.
+        Predictions are a 95% probability range based on an ABC regression model.
+        Sources: Bureau of Meteorology, US National Oceanic & Atmospheric Administration, ABC analysis</div>
+    </div>
+
+    <script>
+      // elements
+      container = d3.select("#container");
+      chart = d3.select("#chart");
+      chartGroup = d3.select("#chartGroup");      
+      axisGroup = d3.select("#axisGroup");
+      axisLabel = d3.select("#axisLabel");
+      yAxisGroup = d3.select("#yAxisGroup");
+      xAxisGroup = d3.select("#xAxisGroup");
+      averageLine = d3.select("#averageLine");
+      currentLine = d3.select("#currentLine");
+      predictionLine = d3.select("#predictionLine");
+      predictionLower = d3.select("#predictionLower");
+      predictionUpper = d3.select("#predictionUpper");
+      footer = d3.select("#footer");
+
+      // dark mode
+      darkModeCheck();
+
+      // load data
+      d3.csv("./data/predictions.csv")
+        .then((data) => {
+          chartData = data
+          .map(d => {
+              for (col of data.columns) {
+                if (col == "month") {
+                  d.month = new Date(d.month);
+                } else {
+                  if (d[col] == "") {
+                    d[col] = null;
+                  } else {
+                    d[col] = +d[col];
+                  }
+                }
+              }
+              return d;
+            });         
+
+          // await fonts
+          document.fonts.onloadingdone = drawChart();
+        });
+
+      function drawChart() {
+        window.addEventListener("resize", resize);
+        resize();
+      }
+
+      function resize() {
+        dimensions = document.getElementById("chart").getBoundingClientRect();
+        width = dimensions.width;
+        height = dimensions.height;
+        mobile = width < 500;
+
+        chart.style("height", height + "px");
+
+        margin = { top: 35, right: 10, bottom: 25, left: 25};
+
+        // prepare chart
+        x = d3.scaleTime()
+          .domain(d3.extent(chartData, d => d.month))
+          .range([margin.left, width - margin.right]);
+        xAxis = d3.axisBottom(x)
+          .ticks(5, "%b")
+          .tickPadding(5)
+          .tickSizeOuter(0)
+          .tickSizeInner(margin.bottom + margin.top - height);
+        y = d3.scaleLinear()
+          .domain([10, 35]).nice()
+          .range([height - margin.bottom, margin.top]);
+        yAxis = d3.axisLeft(y)
+          .ticks(5)
+          .tickPadding(5)
+          .tickSizeOuter(0)
+          .tickSizeInner(margin.left + margin.right - width);
+        
+        lineAverage = d3.line()
+          .x(d => x(d.month))
+          .y(d => y(d.average))
+          .curve(d3.curveNatural);
+        lineCurrent = d3.line()
+          .x(d => x(d.month))
+          .y(d => y(d.current))
+          .curve(d3.curveNatural);
+        lineLower = d3.line()
+          .x(d => x(d.month))
+          .y(d => y(d.lower))
+          .curve(d3.curveNatural);
+        lineUpper = d3.line()
+          .x(d => x(d.month))
+          .y(d => y(d.upper))
+          .curve(d3.curveNatural);
+        area = d3.area()
+          .x(d => x(d.month))
+          .y1(d => y(d.upper))
+          .y0(d => y(d.lower))
+          .curve(d3.curveNatural);
+
+        // plot
+        axisLabel.attr("x", -margin.left)
+          .attr("y", margin.top - 15);
+        xAxisGroup.attr("transform", "translate(0, " + (height - margin.bottom) + ")")
+          .call(xAxis);
+        yAxisGroup.attr("transform", "translate(" + margin.left + ", 0)")
+          .call(yAxis);
+
+        averageLine.attr("d", lineAverage(chartData));                    
+        currentLine.attr("d", lineCurrent(chartData.filter(d => d.current)));
+        predictionLower.attr("d", lineLower(chartData.filter(d => d.lower)));
+        predictionUpper.attr("d", lineUpper(chartData.filter(d => d.upper)));
+        predictionLine.attr("d", area(chartData.filter(d => d.prediction)));
+      }      
+
+      function darkModeCheck() {
+        let testString = window && window.location !== window.parent.location ?
+          document.referrer :
+          document.location.href;
+        
+        let darkMode = testString
+          .includes("newsapp");
+
+        d3.select("body")
+          .classed("darkMode", darkMode);
+      }
+    </script>
+  </body>
+</html>
