@@ -95,4 +95,7 @@ body {
   .darkMode .temperature {
     fill: #009de5;
   }
+  .darkMode .temperature.week {
+    fill: #cc4e00;
+  }
 }
