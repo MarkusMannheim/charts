@@ -84,16 +84,16 @@ body {
     fill: white;
   }  
   .darkMode #footer {
-    color: #888;
+    color: #e6e6e6;
   }
   .darkMode #axisGroup #axisLabel {
     fill: white;
   }
   .darkMode #axisGroup .tick line {
-    stroke: #8495a9;
+    stroke: #ccc;
   }
   .darkMode #axisGroup .tick text {  
-    fill: #8495a9;
+    fill: #e6e6e6;
   }
   .darkMode .temperature {
     opacity: .75;
