@@ -131,7 +131,7 @@
               .force("x", d3.forceX(d => d.x0))
               .force("y", d3.forceY(d => d.y0))
               .force("collide", d3.forceCollide(radius))
-              .alphaDecay(.03);
+              .alphaDecay(.04);
           for (let i = 0; i < ticks; i++) simulation.tick();
           return entries;
         }
