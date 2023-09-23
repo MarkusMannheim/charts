@@ -81,7 +81,7 @@
           height: (document.getElementById("container").getBoundingClientRect().height)
         }, "*");
 
-        radius = width / 100;
+        radius = width / 65;
         margin = { top: 35, right: 10, bottom: 10, left: 25};
 
         // prepare chart
@@ -117,7 +117,7 @@
       function beeswarmForce() {
         let x = d => d[0];
         let y = d => d[1];
-        let ticks = 300;
+        let ticks = 75;
 
         function beeswarm(data) {
           const entries = data.map(d => {
@@ -130,7 +130,8 @@
           const simulation = d3.forceSimulation(entries)
               .force("x", d3.forceX(d => d.x0))
               .force("y", d3.forceY(d => d.y0))
-              .force("collide", d3.forceCollide(radius));
+              .force("collide", d3.forceCollide(radius))
+              .alphaDecay(.03);
           for (let i = 0; i < ticks; i++) simulation.tick();
           return entries;
         }
